@@ -1,7 +1,7 @@
 export const SHIFTS = [
   {
     id: "morning",
-    label: "Morning",
+    label: "Mattina",
     icon: "🌅",
     expectedStart: "08:00",
     expectedEnd: "10:00",
@@ -9,7 +9,7 @@ export const SHIFTS = [
   },
   {
     id: "lunch",
-    label: "Lunch",
+    label: "Pranzo",
     icon: "☀️",
     expectedStart: "13:00",
     expectedEnd: "14:00",
@@ -17,7 +17,7 @@ export const SHIFTS = [
   },
   {
     id: "evening",
-    label: "Evening",
+    label: "Sera",
     icon: "🌙",
     expectedStart: "20:00",
     expectedEnd: "21:00",
@@ -27,22 +27,15 @@ export const SHIFTS = [
 
 export type ShiftId = (typeof SHIFTS)[number]["id"];
 
-export const EXPECTED_DAILY_MINS = 240; // 4 hours
+export const EXPECTED_DAILY_MINS = 240; // 4 ore
 
-/** "08:30" → minutes since midnight */
+/** "08:30" → minuti dalla mezzanotte */
 export function timeToMins(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 }
 
-/** minutes → "08:30" */
-export function minsToTime(mins: number): string {
-  const h = Math.floor(Math.abs(mins) / 60);
-  const m = Math.abs(mins) % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-/** minutes → "2h 30m" display string */
+/** minuti → "2h 30m" */
 export function minsToDisplay(mins: number): string {
   const h = Math.floor(Math.abs(mins) / 60);
   const m = Math.abs(mins) % 60;
@@ -57,14 +50,34 @@ export function calcMinsWorked(arrivedAt: string, leftAt: string): number {
   return Math.max(0, end - start);
 }
 
-/** Returns Mon–Sat dates for the week containing `date` */
+/**
+ * Converte una Date in stringa "YYYY-MM-DD" usando l'ora locale,
+ * NON UTC — evita lo slittamento di data per fusi orari UTC+x
+ */
+export function toDateStr(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Restituisce le 6 date Lun–Sab della settimana che contiene `date`.
+ * Se `date` è domenica, mostra la settimana SUCCESSIVA
+ * (la domenica non è un giorno lavorativo).
+ */
 export function getWeekDates(date: Date): Date[] {
   const d = new Date(date);
-  const day = d.getDay(); // 0=Sun
-  const diff = day === 0 ? -6 : 1 - day;
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+
+  // Domenica → vai al lunedì successivo
+  // Lunedì (1) → diff 0, Martedì (2) → diff -1, ..., Sabato (6) → diff -5
+  const diff = day === 0 ? 1 : 1 - day;
+
   const monday = new Date(d);
   monday.setDate(d.getDate() + diff);
-  monday.setHours(0, 0, 0, 0);
+
   return Array.from({ length: 6 }, (_, i) => {
     const dd = new Date(monday);
     dd.setDate(monday.getDate() + i);
@@ -72,7 +85,7 @@ export function getWeekDates(date: Date): Date[] {
   });
 }
 
-/** All Mon–Sat dates for a given month (year/month are 1-indexed) */
+/** Tutti i giorni Lun–Sab di un mese (anno/mese 1-indexed) */
 export function getMonthWorkingDays(year: number, month: number): Date[] {
   const days: Date[] = [];
   const d = new Date(year, month - 1, 1);
@@ -81,10 +94,6 @@ export function getMonthWorkingDays(year: number, month: number): Date[] {
     d.setDate(d.getDate() + 1);
   }
   return days;
-}
-
-export function toDateStr(date: Date): string {
-  return date.toISOString().slice(0, 10);
 }
 
 export const DAY_NAMES = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
