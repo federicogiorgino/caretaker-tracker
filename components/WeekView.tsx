@@ -18,7 +18,8 @@ function diffTextColor(diff: number) {
   return "text-red-400";
 }
 
-function diffBorderBg(diff: number) {
+function diffBorderBg(diff: number, untracked?: boolean | null) {
+  if (untracked) return "border-blue-500/40 bg-blue-500/10";
   if (diff >= 0) return "border-green-500/40 bg-green-500/10";
   if (diff >= -10) return "border-yellow-500/40 bg-yellow-500/10";
   return "border-red-500/40 bg-red-500/10";
@@ -164,7 +165,7 @@ export function WeekView({ initialShifts, weekStart: initialWeekStart }: WeekVie
                       key={shift.id}
                       onClick={() => setModal({ date: dateStr, shiftId: shift.id as ShiftId })}
                       className={`rounded-lg border p-2.5 text-center transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${entry && sDiff !== null
-                        ? diffBorderBg(sDiff)
+                        ? diffBorderBg(sDiff, entry.untracked)
                         : "border-border bg-background hover:bg-muted/50"
                         }`}
                     >
@@ -180,8 +181,8 @@ export function WeekView({ initialShifts, weekStart: initialWeekStart }: WeekVie
                             {entry.arrivedAt}<br />{entry.leftAt}
                           </div>
                           {sDiff !== null && (
-                            <div className={`text-[10px] font-bold font-mono mt-1 ${diffTextColor(sDiff)}`}>
-                              {sDiff >= 0 ? "+" : "-"}{minsToDisplay(Math.abs(sDiff))}
+                            <div className={`text-[10px] font-bold font-mono mt-1 ${entry.untracked ? "text-blue-400" : diffTextColor(sDiff)}`}>
+                              {entry.untracked ? "~" : sDiff >= 0 ? "+" : "-"}{minsToDisplay(Math.abs(sDiff))}
                             </div>
                           )}
                           {entry.note && (

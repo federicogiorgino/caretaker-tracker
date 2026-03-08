@@ -18,6 +18,7 @@ interface ShiftEntry {
   leftAt: string;
   minutesWorked: number;
   note?: string | null;
+  untracked?: boolean | null;
 }
 
 interface ShiftModalProps {
@@ -34,6 +35,7 @@ export function ShiftModal({ open, onClose, date, shiftId, existing }: ShiftModa
   const [arrivedAt, setArrivedAt] = useState(existing?.arrivedAt ?? shift.expectedStart);
   const [leftAt, setLeftAt] = useState(existing?.leftAt ?? shift.expectedEnd);
   const [note, setNote] = useState(existing?.note ?? "");
+  const [untracked, setUntracked] = useState(existing?.untracked ?? false);
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
 
@@ -48,7 +50,7 @@ export function ShiftModal({ open, onClose, date, shiftId, existing }: ShiftModa
   function handleSave() {
     if (!isValid) return;
     startTransition(async () => {
-      await upsertShift(date, shiftId, arrivedAt, leftAt, note || undefined);
+      await upsertShift(date, shiftId, arrivedAt, leftAt, note || undefined, untracked);
       onClose();
     });
   }
@@ -76,7 +78,7 @@ export function ShiftModal({ open, onClose, date, shiftId, existing }: ShiftModa
         </div>
 
         {/* Selettori orari */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid grid-cols-2 gap-4 transition-opacity ${untracked ? "opacity-40 pointer-events-none" : ""}`}>
           <div className="space-y-2">
             <Label htmlFor="arrived">Arrivata</Label>
             <input
@@ -84,7 +86,8 @@ export function ShiftModal({ open, onClose, date, shiftId, existing }: ShiftModa
               type="time"
               value={arrivedAt}
               onChange={(e) => setArrivedAt(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xl font-mono text-center focus:outline-none focus:ring-1 focus:ring-ring"
+              disabled={untracked}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xl font-mono text-center focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed"
             />
           </div>
           <div className="space-y-2">
@@ -94,7 +97,8 @@ export function ShiftModal({ open, onClose, date, shiftId, existing }: ShiftModa
               type="time"
               value={leftAt}
               onChange={(e) => setLeftAt(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xl font-mono text-center focus:outline-none focus:ring-1 focus:ring-ring"
+              disabled={untracked}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xl font-mono text-center focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -108,12 +112,36 @@ export function ShiftModal({ open, onClose, date, shiftId, existing }: ShiftModa
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Differenza</p>
-              <p className={`text-lg font-bold font-mono ${diff >= 0 ? "text-green-400" : "text-red-400"}`}>
+              <p className={`text-lg font-bold font-mono ${diff >= 0 ? "text-green-400" : diff >= -10 ? "text-yellow-400" : "text-red-400"}`}>
                 {diff >= 0 ? "+" : "-"}{minsToDisplay(Math.abs(diff))}
               </p>
             </div>
           </div>
         )}
+
+        {/* Toggle non tracciato */}
+        <button
+          type="button"
+          onClick={() => setUntracked(u => !u)}
+          className={`w-full rounded-lg border px-4 py-3 text-left transition-all ${untracked
+            ? "border-blue-500/50 bg-blue-500/10"
+            : "border-border bg-background hover:bg-muted/40"
+            }`}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className={`text-sm font-medium ${untracked ? "text-blue-400" : "text-foreground"}`}>
+                🔵 Non tracciato
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Orario stimato, non verificato di persona
+              </p>
+            </div>
+            <div className={`w-9 h-5 rounded-full transition-colors ${untracked ? "bg-blue-500" : "bg-muted"}`}>
+              <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${untracked ? "translate-x-4" : "translate-x-0.5"}`} />
+            </div>
+          </div>
+        </button>
 
         {/* Nota */}
         <div className="space-y-2">

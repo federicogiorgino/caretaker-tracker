@@ -1,4 +1,4 @@
-import { pgTable, text, integer, serial, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, serial, boolean, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const shifts = pgTable("shifts", {
   id: serial("id").primaryKey(),
@@ -8,6 +8,7 @@ export const shifts = pgTable("shifts", {
   leftAt: text("left_at").notNull(),
   minutesWorked: integer("minutes_worked").notNull(),
   note: text("note"),
+  untracked: boolean("untracked").notNull().default(false),
 }, (table) => ({
   dateShiftUnique: uniqueIndex("date_shift_unique").on(table.date, table.shiftId),
 }));

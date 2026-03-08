@@ -12,7 +12,8 @@ function diffTextColor(diff: number) {
   return "text-red-400";
 }
 
-function diffBorderBg(diff: number) {
+function diffBorderBg(diff: number, untracked?: boolean | null) {
+  if (untracked) return "bg-blue-500/10 text-blue-400 border-blue-500/30";
   if (diff >= 0) return "bg-green-500/10 text-green-400 border-green-500/30";
   if (diff >= -10) return "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
   return "bg-red-500/10 text-red-400 border-red-500/30";
@@ -130,7 +131,7 @@ export function MonthReport() {
                       <span
                         key={s.id}
                         className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${entry && sDiff !== null
-                          ? diffBorderBg(sDiff)
+                          ? diffBorderBg(sDiff, entry.untracked)
                           : "bg-muted/30 text-muted-foreground border-border"
                           }`}
                       >
