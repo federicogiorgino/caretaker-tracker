@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 217 32% 15%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 40% 96%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 32% 18%;
+    --input: 217 32% 18%;
+    --ring: 262 83% 65%;
+
+    --success: 142 76% 36%;
+    --warning: 45 93% 47%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Time input styling */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+input[type="time"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
