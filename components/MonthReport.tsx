@@ -6,6 +6,18 @@ import {
 } from "@/lib/constants";
 import type { Shift } from "@/lib/schema";
 
+function diffTextColor(diff: number) {
+  if (diff >= 0) return "text-green-400";
+  if (diff >= -10) return "text-yellow-400";
+  return "text-red-400";
+}
+
+function diffBorderBg(diff: number) {
+  if (diff >= 0) return "bg-green-500/10 text-green-400 border-green-500/30";
+  if (diff >= -10) return "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
+  return "bg-red-500/10 text-red-400 border-red-500/30";
+}
+
 export function MonthReport() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -28,6 +40,7 @@ export function MonthReport() {
   const shiftMap = new Map(shifts.map((s) => [`${s.date}__${s.shiftId}`, s]));
   const totalWorked = shifts.reduce((sum, s) => sum + s.minutesWorked, 0);
   const totalMissing = Math.max(0, totalExpected - totalWorked);
+  const totalDiff = totalWorked - totalExpected;
   const coverage = totalExpected > 0 ? Math.round((totalWorked / totalExpected) * 100) : 0;
 
   function prevMonth() {
@@ -60,8 +73,8 @@ export function MonthReport() {
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
           { label: "Previste", value: minsToDisplay(totalExpected), color: "text-foreground" },
-          { label: "Registrate", value: minsToDisplay(totalWorked), color: totalWorked >= totalExpected ? "text-green-400" : "text-red-400" },
-          { label: "Mancanti", value: minsToDisplay(totalMissing), color: totalMissing === 0 ? "text-green-400" : "text-red-400" },
+          { label: "Registrate", value: minsToDisplay(totalWorked), color: diffTextColor(totalDiff) },
+          { label: "Mancanti", value: minsToDisplay(totalMissing), color: totalMissing === 0 ? "text-green-400" : diffTextColor(-totalMissing) },
         ].map((c) => (
           <div key={c.label} className="rounded-xl border border-border bg-card p-4 text-center">
             <p className={`text-xl font-bold font-mono ${c.color}`}>{c.value}</p>
@@ -116,10 +129,8 @@ export function MonthReport() {
                     return (
                       <span
                         key={s.id}
-                        className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${entry
-                          ? sDiff !== null && sDiff >= 0
-                            ? "bg-green-500/10 text-green-400 border-green-500/30"
-                            : "bg-red-500/10 text-red-400 border-red-500/30"
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${entry && sDiff !== null
+                          ? diffBorderBg(sDiff)
                           : "bg-muted/30 text-muted-foreground border-border"
                           }`}
                       >
@@ -131,13 +142,13 @@ export function MonthReport() {
                   })}
                 </div>
 
-                <span className={`text-xs font-bold font-mono shrink-0 ${dayMins >= EXPECTED_DAILY_MINS ? "text-green-400" : dayMins > 0 ? "text-yellow-400" : "text-red-400"
+                <span className={`text-xs font-bold font-mono shrink-0 ${dayMins >= EXPECTED_DAILY_MINS ? "text-green-400" : dayMins > 0 ? diffTextColor(diff) : "text-red-400"
                   }`}>
                   {minsToDisplay(dayMins)}
                 </span>
 
                 {dayMins > 0 && (
-                  <span className={`text-[10px] font-mono shrink-0 ${diff >= 0 ? "text-green-400" : "text-red-400"}`}>
+                  <span className={`text-[10px] font-mono shrink-0 ${diffTextColor(diff)}`}>
                     {diff >= 0 ? "+" : "-"}{minsToDisplay(Math.abs(diff))}
                   </span>
                 )}

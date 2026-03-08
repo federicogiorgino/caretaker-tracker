@@ -11,6 +11,19 @@ import {
 } from "@/lib/constants";
 import type { Shift } from "@/lib/schema";
 
+// diff >= 0: verde, diff >= -10: giallo, diff < -10: rosso
+function diffTextColor(diff: number) {
+  if (diff >= 0) return "text-green-400";
+  if (diff >= -10) return "text-yellow-400";
+  return "text-red-400";
+}
+
+function diffBorderBg(diff: number) {
+  if (diff >= 0) return "border-green-500/40 bg-green-500/10";
+  if (diff >= -10) return "border-yellow-500/40 bg-yellow-500/10";
+  return "border-red-500/40 bg-red-500/10";
+}
+
 interface WeekViewProps {
   initialShifts: Shift[];
   weekStart: Date;
@@ -126,13 +139,13 @@ export function WeekView({ initialShifts, weekStart: initialWeekStart }: WeekVie
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className={`font-bold font-mono text-sm ${complete ? "text-green-400" : dayMins > 0 ? "text-yellow-400" : "text-muted-foreground"
+                  <span className={`font-bold font-mono text-sm ${complete ? "text-green-400" : dayMins > 0 ? diffTextColor(dayDiff) : "text-muted-foreground"
                     }`}>
                     {minsToDisplay(dayMins)}
                   </span>
                   <span className="text-xs text-muted-foreground font-mono"> / 4h</span>
                   {dayMins > 0 && (
-                    <span className={`text-xs font-mono ml-1.5 ${dayDiff >= 0 ? "text-green-400" : "text-red-400"}`}>
+                    <span className={`text-xs font-mono ml-1.5 ${diffTextColor(dayDiff)}`}>
                       ({dayDiff >= 0 ? "+" : "-"}{minsToDisplay(Math.abs(dayDiff))})
                     </span>
                   )}
@@ -150,10 +163,8 @@ export function WeekView({ initialShifts, weekStart: initialWeekStart }: WeekVie
                     <button
                       key={shift.id}
                       onClick={() => setModal({ date: dateStr, shiftId: shift.id as ShiftId })}
-                      className={`rounded-lg border p-2.5 text-center transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${entry
-                        ? sDiff !== null && sDiff >= 0
-                          ? "border-green-500/40 bg-green-500/10"
-                          : "border-red-500/40 bg-red-500/10"
+                      className={`rounded-lg border p-2.5 text-center transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${entry && sDiff !== null
+                        ? diffBorderBg(sDiff)
                         : "border-border bg-background hover:bg-muted/50"
                         }`}
                     >
@@ -168,10 +179,11 @@ export function WeekView({ initialShifts, weekStart: initialWeekStart }: WeekVie
                           <div className="text-[10px] font-mono mt-1.5 leading-tight">
                             {entry.arrivedAt}<br />{entry.leftAt}
                           </div>
-                          <div className={`text-[10px] font-bold font-mono mt-1 ${sDiff !== null && sDiff >= 0 ? "text-green-400" : "text-red-400"
-                            }`}>
-                            {sDiff !== null && (sDiff >= 0 ? "+" : "-")}{minsToDisplay(Math.abs(sDiff ?? 0))}
-                          </div>
+                          {sDiff !== null && (
+                            <div className={`text-[10px] font-bold font-mono mt-1 ${diffTextColor(sDiff)}`}>
+                              {sDiff >= 0 ? "+" : "-"}{minsToDisplay(Math.abs(sDiff))}
+                            </div>
+                          )}
                           {entry.note && (
                             <div className="text-[9px] text-muted-foreground mt-1 truncate" title={entry.note}>
                               📝 {entry.note}
