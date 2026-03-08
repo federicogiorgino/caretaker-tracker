@@ -22,7 +22,7 @@ pnpm install
 ```bash
 cp .env.local.example .env.local
 ```
-Paste your Neon connection string as `DATABASE_URL`.
+Paste your Neon connection string as `POSTRGES_URL`.
 
 ### 4. Push the schema to your database
 ```bash
@@ -52,13 +52,13 @@ git push -u origin main
 1. Go to [vercel.com](https://vercel.com) → **Add New Project**
 2. Import your GitHub repo
 3. Under **Environment Variables**, add:
-   - `DATABASE_URL` → your Neon connection string
+   - `POSTRGES_URL` → your Neon connection string
    - `TZ` → `Europe/Rome`
 4. Click **Deploy**
 
 That's it. Share the Vercel URL with your family.
 
-> **Tip:** In the Neon dashboard you can also connect Neon directly to your Vercel project (Vercel → Storage → Connect Store) and it will set `DATABASE_URL` automatically.
+> **Tip:** In the Neon dashboard you can also connect Neon directly to your Vercel project (Vercel → Storage → Connect Store) and it will set `POSTRGES_URL` automatically.
 
 ---
 
